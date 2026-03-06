@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm run db:generate && pnpm run db:migrate:prod && next build",
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
   "functions": {
     "app/api/recommendations/route.ts": { "maxDuration": 30 },
     "app/api/plans/route.ts": { "maxDuration": 60 },
