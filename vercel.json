@@ -1,0 +1,8 @@
+{
+  "buildCommand": "pnpm run db:generate && pnpm run db:migrate:prod && next build",
+  "functions": {
+    "app/api/recommendations/route.ts": { "maxDuration": 30 },
+    "app/api/plans/route.ts": { "maxDuration": 60 },
+    "app/api/plans/[planId]/refine/route.ts": { "maxDuration": 60 }
+  }
+}
