@@ -8,7 +8,7 @@ import { StepProgress } from '@/components/kiosk/StepProgress'
 import { useSessionContext } from '@/components/providers/SessionProvider'
 import { toast } from 'sonner'
 
-const RETAILER_ID = process.env.NEXT_PUBLIC_RETAILER_ID ?? ''
+const RETAILER_ID = (process.env.NEXT_PUBLIC_RETAILER_ID ?? '').trim()
 
 export default function ProfilePage() {
   const router = useRouter()
