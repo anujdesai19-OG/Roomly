@@ -35,10 +35,14 @@ export default function PlanPage() {
     setError(null)
 
     try {
+      const floorPlanImage = typeof window !== 'undefined'
+        ? sessionStorage.getItem('roomly_floorplan_b64')
+        : null
+
       const res = await fetch('/api/plans', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: session.id }),
+        body: JSON.stringify({ sessionId: session.id, floorPlanImage: floorPlanImage ?? undefined }),
       })
 
       if (!res.ok || !res.body) throw new Error('Plan generation failed')

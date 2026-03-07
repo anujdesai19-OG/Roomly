@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const generatePlanSchema = z.object({
   sessionId: z.string().min(1),
+  floorPlanImage: z.string().optional(), // base64 jpeg/png
 })
 
 export const refinePlanSchema = z.object({

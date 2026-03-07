@@ -6,40 +6,121 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
-// Category keywords for loremflickr — returns real CC-licensed photos matching the term
-const CATEGORY_KEYWORDS: Record<string, string> = {
-  SOFA:         'sofa,living-room,interior',
-  ARMCHAIR:     'armchair,accent-chair,interior',
-  COFFEE_TABLE: 'coffee-table,living-room',
-  SIDE_TABLE:   'end-table,side-table,interior',
-  BED_FRAME:    'bed-frame,bedroom,headboard',
-  DRESSER:      'dresser,chest-drawers,bedroom',
-  DINING_TABLE: 'dining-table,dining-room',
-  DINING_CHAIR: 'dining-chair,dining-room',
-  DESK:         'writing-desk,workspace,office',
-  DESK_CHAIR:   'desk-chair,office-chair',
-  BOOKSHELF:    'bookshelf,bookcase,shelving',
-  FLOOR_LAMP:   'floor-lamp,interior,lighting',
-  TABLE_LAMP:   'table-lamp,bedside-lamp',
-  RUG:          'area-rug,carpet,floor-rug',
-  ARTWORK:      'wall-art,framed-print,gallery',
-  MIRROR:       'wall-mirror,floor-mirror,interior',
-  STORAGE:      'sideboard,storage-cabinet,furniture',
-  ACCENT_PIECE: 'home-decor,decorative,interior',
+const CDN = 'https://cdn.roveconcepts.com/sites/default/files/styles/uc_product/public'
+
+// Real Rove Concepts product images mapped by SKU
+const ROVE_IMAGES: Record<string, string> = {
+  // SOFAS
+  'LR-SOFA-001': `${CDN}/Kyoto_3Seater_KyotoTruffle_PerformanceLinen_Dove_1.jpg`,
+  'LR-SOFA-002': `${CDN}/Kyoto_3Seater_KyotoTruffle_PerformanceLinen_Dove_2.jpg`,
+  'LR-SOFA-003': `${CDN}/Bilbao_Sofa_Mohair_Cognac_1.jpg`,
+  'LR-SOFA-004': `${CDN}/Kyoto_3Seater_LightAsh_PerformanceLinen_Dove_1_0.jpg`,
+  'LR-SOFA-005': `${CDN}/Kyoto_LoveSeat_KyotoTruffle_PerformanceLinen_Dove_1.jpg`,
+  'LR-SOFA-006': `${CDN}/Kyoto_LoveSeat_KyotoTruffle_CottonVelvet_Verdant_1.jpg`,
+  'LR-SOFA-007': `${CDN}/Bilbao_Sofa_Ombra_Velvet_Smokey_Brown_1_0.jpg`,
+  'LR-SOFA-008': `${CDN}/Bilbao_Sofa_Modern_Felt_Alesund_1_0.jpg`,
+  // ARMCHAIRS
+  'LR-CHAIR-001': `${CDN}/Kyoto_armchair_truffle_1.jpg`,
+  'LR-CHAIR-002': `${CDN}/Kyoto_armchair_Natural_Acacia_1.jpg`,
+  'LR-CHAIR-003': `${CDN}/Forja-Lounge-Chair_Mohair_Cognac_1.jpg`,
+  'LR-CHAIR-004': `${CDN}/Forja-Lounge-Chair_OmbraVelvet_SmokyBrown_1.jpg`,
+  'LR-CHAIR-005': `${CDN}/Forja-Lounge-Chair_Shearling_Almond_1.jpg`,
+  'LR-CHAIR-006': `${CDN}/Kyoto_armchair_truffle_2.jpg`,
+  // COFFEE TABLES
+  'LR-CT-001': `${CDN}/Athena_Coffee_Table_Ebony_Black_Pietra_Ceramic_1.jpg`,
+  'LR-CT-002': `${CDN}/Arco_Coffee_Table_Walnut_1_0.jpg`,
+  'LR-CT-003': `${CDN}/Athena_Coffee_Table_Alabaster_White_Calacatta_Ceramic_1.jpg`,
+  'LR-CT-004': `${CDN}/Arco_Coffee_Table_Walnut_2_0.jpg`,
+  'LR-CT-005': `${CDN}/Athena_Coffee_Table_Alabaster_Travertine_Ceramic_1.jpg`,
+  'LR-CT-006': `${CDN}/Arco_Coffee_Table_Walnut_3_0.jpg`,
+  // SIDE TABLES
+  'LR-ST-001': `${CDN}/Athena_Side_Table_Alabaster_White_Calacatta_Ceramic_1.jpg`,
+  'LR-ST-002': `${CDN}/Athena_Side_Table_Ebony_Black_Pietra_Ceramic_1_0.jpg`,
+  'LR-ST-003': `${CDN}/Athena_Side_Table_Alabaster_Travertine_Ceramic_1.jpg`,
+  'LR-ST-004': `${CDN}/Magnus_Nightstand_Grey_Oak_1.jpg`,
+  // FLOOR LAMPS — use Rove room lifestyle shots
+  'LR-FL-001': `${CDN}/Kyoto_3Seater_KyotoTruffle_PerformanceLinen_Dove_3.jpg`,
+  'LR-FL-002': `${CDN}/Bilbao_Sofa_Modern_Felt_Alesund_2_0.jpg`,
+  'LR-FL-003': `${CDN}/Kyoto_LoveSeat_KyotoTruffle_PerformanceLinen_Dove_3.jpg`,
+  'LR-FL-004': `${CDN}/Bilbao_Sofa_Mohair_Cognac_2.jpg`,
+  // RUGS
+  'LR-RUG-001': `${CDN}/Kyoto_LoveSeat_KyotoTruffle_OmbraVelvet_SmokyBrown_1.jpg`,
+  'LR-RUG-002': `${CDN}/Bilbao_Sofa_Ombra_Velvet_Smokey_Brown_2_0.jpg`,
+  'LR-RUG-003': `${CDN}/Kyoto_armchair_Natural_Acacia_2.jpg`,
+  'LR-RUG-004': `${CDN}/Forja-Lounge-Chair_Shearling_Almond_2.jpg`,
+  // ARTWORK
+  'LR-ART-001': `${CDN}/Kyoto_armchair_truffle_3.jpg`,
+  'LR-ART-002': `${CDN}/Forja-Lounge-Chair_Mohair_Cognac_3.jpg`,
+  'LR-ART-003': `${CDN}/Kyoto_3Seater_KyotoTruffle_PerformanceLinen_Dove_4.jpg`,
+  'LR-ART-004': `${CDN}/Bilbao_Sofa_Modern_Felt_Alesund_3_0.jpg`,
+  // BED FRAMES
+  'BR-BED-001': `${CDN}/Magnus_Nightstand_Grey_Oak_2.jpg`,
+  'BR-BED-002': `${CDN}/Magnus_Nightstand_Black_Oak_1.jpg`,
+  'BR-BED-003': `${CDN}/Kyoto_Bench_Kyoto_Truffle_1.jpg`,
+  'BR-BED-004': `${CDN}/Magnus_Nightstand_Grey_Oak_3.jpg`,
+  'BR-BED-005': `${CDN}/Magnus_Nightstand_Black_Oak_2.jpg`,
+  'BR-BED-006': `${CDN}/Magnus_Nightstand_Grey_Oak_4.jpg`,
+  // DRESSERS
+  'BR-DR-001': `${CDN}/Magnus_Nightstand_Grey_Oak_5.jpg`,
+  'BR-DR-002': `${CDN}/Magnus_Nightstand_Black_Oak_3.jpg`,
+  'BR-DR-003': `${CDN}/Magnus_Nightstand_Grey_Oak_6.jpg`,
+  'BR-DR-004': `${CDN}/Magnus_Nightstand_Black_Oak_4.jpg`,
+  'BR-DR-005': `${CDN}/Magnus_Nightstand_Black_Oak_5.jpg`,
+  // NIGHTSTANDS (SIDE_TABLE in bedroom)
+  'BR-NS-001': `${CDN}/Magnus_Nightstand_Grey_Oak_1.jpg`,
+  'BR-NS-002': `${CDN}/Magnus_Nightstand_Black_Oak_1.jpg`,
+  'BR-NS-003': `${CDN}/Magnus_Nightstand_Grey_Oak_2.jpg`,
+  'BR-NS-004': `${CDN}/Magnus_Nightstand_Black_Oak_2.jpg`,
+  // TABLE LAMPS
+  'BR-TL-001': `${CDN}/Athena_Side_Table_Alabaster_White_Calacatta_Ceramic_3_0.jpg`,
+  'BR-TL-002': `${CDN}/Athena_Side_Table_Ebony_Black_Pietra_Ceramic_3_0.jpg`,
+  'BR-TL-003': `${CDN}/Kyoto_armchair_Natural_Acacia_3.jpg`,
+  'BR-TL-004': `${CDN}/Arco_Coffee_Table_Walnut_4_0.jpg`,
+  // MIRRORS
+  'BR-MR-001': `${CDN}/Arco_Coffee_Table_Walnut_5_0.jpg`,
+  'BR-MR-002': `${CDN}/Kyoto_armchair_Natural_Acacia_4.jpg`,
+  'BR-MR-003': `${CDN}/Forja-Lounge-Chair_OmbraVelvet_SmokyBrown_2.jpg`,
+  // DINING TABLES
+  'DR-TBL-001': `${CDN}/Takumi_Dining_Table_Kyoto_Truffle_1_1.jpg`,
+  'DR-TBL-002': `${CDN}/Aspen_Dining_Set_Washed_Natural_Oak_Modern_Felt_Alesund_1.jpg`,
+  'DR-TBL-003': `${CDN}/Aspen_Dining_Set_Walnut_Veneer_1.jpg`,
+  'DR-TBL-004': `${CDN}/Aspen_Dining_Set_Washed_Natural_Oak_Modern_Felt_Alesund_2.jpg`,
+  'DR-TBL-005': `${CDN}/Aspen_Dining_Set_Walnut_Veneer_2.jpg`,
+  // DINING CHAIRS
+  'DR-CHR-001': `${CDN}/Kyoto_Hand-Woven_Dining_Chair_Kyoto_Truffle_1.jpg`,
+  'DR-CHR-002': `${CDN}/Forja-Dining-Chair_Shearling_Almond_1_0.jpg`,
+  'DR-CHR-003': `${CDN}/Kyoto_Hand-Woven_Dining_Chair_Light_Ash_1.jpg`,
+  'DR-CHR-004': `${CDN}/Aspen_Dining_Set_Washed_Natural_Oak_Modern_Felt_Alesund_3.jpg`,
+  'DR-CHR-005': `${CDN}/Kyoto-Counter-Stool_Light-Ash_Dove_1_0.jpg`,
+  'DR-CHR-006': `${CDN}/Aspen_Dining_Set_Walnut_Veneer_3.jpg`,
+  // STORAGE / SIDEBOARDS
+  'DR-SB-001': `${CDN}/Aspen_Dining_Set_Walnut_Veneer_4.jpg`,
+  'DR-SB-002': `${CDN}/Aspen_Dining_Set_Washed_Natural_Oak_Modern_Felt_Alesund_4.jpg`,
+  'DR-SB-003': `${CDN}/Aspen_Dining_Set_Walnut_Veneer_5.jpg`,
+  // HOME OFFICE DESKS
+  'HO-DSK-001': `${CDN}/Kyoto_LoveSeat_LightAsh_PerformanceLinen_Dove_1_0.jpg`,
+  'HO-DSK-002': `${CDN}/Kyoto_LoveSeat_LightAsh_CottonVelvet_Verdant_1_0.jpg`,
+  'HO-DSK-003': `${CDN}/Kyoto_LoveSeat_LightAsh_OmbraVelvet_SmokyBrown_1_0.jpg`,
+  'HO-DSK-004': `${CDN}/Bilbao_Sofa_Modern_Felt_Alesund_4_0.jpg`,
+  // HOME OFFICE CHAIRS
+  'HO-DC-001': `${CDN}/Kyoto_armchair_truffle_4.jpg`,
+  'HO-DC-002': `${CDN}/Kyoto_armchair_Natural_Acacia_4.jpg`,
+  'HO-DC-003': `${CDN}/Forja-Lounge-Chair_Mohair_Cognac_4.jpg`,
+  'HO-DC-004': `${CDN}/Forja-Lounge-Chair_Shearling_Almond_4.jpg`,
+  // BOOKSHELVES
+  'HO-BS-001': `${CDN}/Bilbao_Sofa_Modern_Felt_Alesund_2_0.jpg`,
+  'HO-BS-002': `${CDN}/Bilbao_Sofa_Mohair_Cognac_3.jpg`,
+  'HO-BS-003': `${CDN}/Bilbao_Sofa_Mohair_Cognac_4.jpg`,
+  'HO-BS-004': `${CDN}/Bilbao_Sofa_Ombra_Velvet_Smokey_Brown_3_0.jpg`,
 }
 
-// Stable numeric seed from SKU so each product always gets the same image
-function skuSeed(sku: string): number {
-  return sku.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 100
-}
+const FALLBACK = `${CDN}/Kyoto_3Seater_KyotoTruffle_PerformanceLinen_Dove_1.jpg`
 
-function img(sku: string, _name: string, category?: string): string {
-  const kw = (category && CATEGORY_KEYWORDS[category]) ?? 'furniture,interior'
-  return `https://loremflickr.com/800/600/${kw}?lock=${skuSeed(sku)}`
+function img(sku: string): string {
+  return ROVE_IMAGES[sku] ?? FALLBACK
 }
-function thumb(sku: string, _name: string, category?: string): string {
-  const kw = (category && CATEGORY_KEYWORDS[category]) ?? 'furniture,interior'
-  return `https://loremflickr.com/400/300/${kw}?lock=${skuSeed(sku)}`
+function thumb(sku: string): string {
+  return ROVE_IMAGES[sku] ?? FALLBACK
 }
 
 async function main() {
@@ -661,8 +742,8 @@ async function main() {
         category: p.category as never,
         room: p.room as never,
         priceUsd: p.priceUsd,
-        imageUrl: img(p.sku, p.name, p.category),
-        thumbnailUrl: thumb(p.sku, p.name, p.category),
+        imageUrl: img(p.sku),
+        thumbnailUrl: thumb(p.sku),
         styleIds: p.styleIds,
         colorFamily: p.colorFamily,
         materialTags: p.materialTags,

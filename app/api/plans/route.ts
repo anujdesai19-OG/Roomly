@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
     }
 
-    const { sessionId } = parsed.data
+    const { sessionId, floorPlanImage } = parsed.data
     const session = await prisma.session.findUnique({ where: { id: sessionId } })
     if (!session) return NextResponse.json({ error: 'Session not found' }, { status: 404 })
 
@@ -66,10 +66,17 @@ export async function POST(req: NextRequest) {
         try {
           let rawJson = ''
 
+          const userContent: Parameters<typeof anthropic.messages.stream>[0]['messages'][0]['content'] = floorPlanImage
+            ? [
+                { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: floorPlanImage } },
+                { type: 'text', text: prompt },
+              ]
+            : prompt
+
           const claudeStream = anthropic.messages.stream({
             model: QUALITY_MODEL,
             max_tokens: 4096,
-            messages: [{ role: 'user', content: prompt }],
+            messages: [{ role: 'user', content: userContent }],
           })
 
           // Stream rationale tokens to client as they arrive
