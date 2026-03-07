@@ -17,6 +17,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [address, setAddress] = useState('')
+  const [floorPlanNote, setFloorPlanNote] = useState('')
   const [consent, setConsent] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -49,6 +50,16 @@ export default function ProfilePage() {
         body: JSON.stringify({ address }),
       })
       const addressMeta = addrRes.ok ? await addrRes.json() : { beds: 2, baths: 2, rooms: ['LIVING_ROOM', 'BEDROOM'], source: 'stub' }
+
+      // Merge optional floor plan note into addressMeta and persist to DB
+      if (floorPlanNote.trim()) {
+        addressMeta.floorPlanNote = floorPlanNote.trim()
+      }
+      await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ addressMeta }),
+      })
 
       // Store in context
       setSession({
@@ -122,6 +133,21 @@ export default function ProfilePage() {
             className="h-12 text-base"
           />
           <p className="text-xs text-muted-foreground">Used to understand your home layout. Never shared.</p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="floorPlan">
+            Floor plan <span className="text-muted-foreground font-normal">(optional)</span>
+          </label>
+          <textarea
+            id="floorPlan"
+            value={floorPlanNote}
+            onChange={(e) => setFloorPlanNote(e.target.value)}
+            placeholder="e.g. Open-concept living and dining area, ~400 sq ft. Living room is 15×20 ft with a south-facing window wall."
+            rows={3}
+            className="w-full resize-none rounded-xl border bg-background px-4 py-3 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          />
+          <p className="text-xs text-muted-foreground">Describe your room dimensions or layout to get a better-fitting plan.</p>
         </div>
 
         {/* Consent */}

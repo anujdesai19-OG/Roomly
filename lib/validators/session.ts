@@ -14,6 +14,7 @@ export const updateSessionSchema = z.object({
   designStyle: z.string().min(1).optional(),
   colorPalette: z.array(z.string()).optional(),
   budgetCents: z.record(z.string(), z.number().int().positive()).optional(),
+  addressMeta: z.record(z.string(), z.unknown()).optional(),
 })
 
 export type CreateSessionInput = z.infer<typeof createSessionSchema>

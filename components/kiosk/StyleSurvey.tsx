@@ -1,15 +1,17 @@
 'use client'
 
-import { DESIGN_STYLES, COLOR_PALETTES } from '@/types/session'
+import { DESIGN_STYLES, COLOR_PALETTES, WALL_COLORS } from '@/types/session'
 
 interface StyleSurveyProps {
   selectedStyle: string | null
   selectedPalettes: string[]
+  selectedWallColor: string | null
   onStyleChange: (style: string) => void
   onPaletteChange: (palettes: string[]) => void
+  onWallColorChange: (color: string | null) => void
 }
 
-export function StyleSurvey({ selectedStyle, selectedPalettes, onStyleChange, onPaletteChange }: StyleSurveyProps) {
+export function StyleSurvey({ selectedStyle, selectedPalettes, selectedWallColor, onStyleChange, onPaletteChange, onWallColorChange }: StyleSurveyProps) {
   function togglePalette(id: string) {
     if (selectedPalettes.includes(id)) {
       onPaletteChange(selectedPalettes.filter((p) => p !== id))
@@ -69,6 +71,34 @@ export function StyleSurvey({ selectedStyle, selectedPalettes, onStyleChange, on
                   <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-foreground'}`}>{palette.label}</p>
                   <p className="text-xs text-muted-foreground">{palette.description}</p>
                 </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Wall Color */}
+      <div>
+        <h3 className="mb-1 text-base font-semibold">Wall Color <span className="text-muted-foreground font-normal text-sm">(optional)</span></h3>
+        <p className="mb-3 text-sm text-muted-foreground">We&apos;ll pick furniture that complements your walls.</p>
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+          {WALL_COLORS.map((color) => {
+            const isSelected = selectedWallColor === color.id
+            return (
+              <button
+                key={color.id}
+                onClick={() => onWallColorChange(isSelected ? null : color.id)}
+                aria-pressed={isSelected}
+                title={color.label}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition-all touch-manipulation
+                  ${isSelected ? 'border-primary' : 'border-border hover:border-primary/40'}`}
+              >
+                <div
+                  className="h-10 w-10 rounded-full border shadow-sm"
+                  style={{ backgroundColor: color.hex }}
+                  aria-hidden="true"
+                />
+                <p className="text-xs font-medium text-center leading-tight">{color.label}</p>
               </button>
             )
           })}

@@ -17,10 +17,16 @@ interface PlanPromptOptions {
   likedByRoom: Record<string, LikedProduct[]>
   budgetCentsByRoom: Record<string, number> | null
   dislikedStyleTags: string[]
+  floorPlanNote?: string | null
 }
 
 export function buildPlanPrompt(opts: PlanPromptOptions): string {
-  const { shopperName, designStyle, colorPalette, rooms, likedByRoom, budgetCentsByRoom, dislikedStyleTags } = opts
+  const { shopperName, designStyle, colorPalette, rooms, likedByRoom, budgetCentsByRoom, dislikedStyleTags, floorPlanNote } = opts
+
+  // Extract wall color stored as "wall:<id>" tag in colorPalette
+  const wallColorTag = colorPalette.find((p) => p.startsWith('wall:'))
+  const wallColor = wallColorTag ? wallColorTag.replace('wall:', '').replace(/-/g, ' ') : null
+  const furniturePalette = colorPalette.filter((p) => !p.startsWith('wall:'))
 
   const roomSections = rooms
     .map((room) => {
@@ -36,9 +42,9 @@ export function buildPlanPrompt(opts: PlanPromptOptions): string {
   return `You are an expert interior designer creating a personalized room furnishing plan.
 
 SHOPPER: ${shopperName}
-HOME: 2 bed / 2 bath apartment
+HOME: 2 bed / 2 bath apartment${floorPlanNote ? `\nFLOOR PLAN NOTE: ${floorPlanNote}` : ''}
 DESIGN STYLE: ${designStyle}
-COLOR PALETTE: ${colorPalette.join(', ')}
+FURNITURE COLOR PALETTE: ${furniturePalette.join(', ')}${wallColor ? `\nWALL COLOR: ${wallColor} — select furniture that complements this wall color` : ''}
 AVOID THESE STYLE ELEMENTS (from disliked items): ${dislikedStyleTags.slice(0, 5).join(', ') || 'none identified'}
 
 ROOMS AND LIKED PRODUCTS:

@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     })
     disliked.forEach((s) => dislikedStyleTags.push(...s.product.styleIds))
 
+    const addressMeta = session.addressMeta as Record<string, unknown> | null
     const prompt = buildPlanPrompt({
       shopperName: session.shopperName ?? 'there',
       designStyle: session.designStyle ?? 'modern',
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
       likedByRoom,
       budgetCentsByRoom: session.budgetCents as Record<string, number> | null,
       dislikedStyleTags: [...new Set(dislikedStyleTags)],
+      floorPlanNote: typeof addressMeta?.floorPlanNote === 'string' ? addressMeta.floorPlanNote : null,
     })
 
     const encoder = new TextEncoder()

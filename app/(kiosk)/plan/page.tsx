@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { StepProgress } from '@/components/kiosk/StepProgress'
 import { PlanView } from '@/components/kiosk/PlanView'
+import { RefineChat } from '@/components/kiosk/RefineChat'
+import { RecommendedAdditions } from '@/components/kiosk/RecommendedAdditions'
 import { LoadingScreen } from '@/components/shared/LoadingSpinner'
 import { useSessionContext } from '@/components/providers/SessionProvider'
 import type { PlanData } from '@/types/plan'
@@ -18,6 +20,7 @@ export default function PlanPage() {
   const [streamingText, setStreamingText] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showRefine, setShowRefine] = useState(false)
 
   useEffect(() => {
     if (!session?.id) return
@@ -80,6 +83,15 @@ export default function PlanPage() {
     }
   }
 
+  async function handleRefined(newPlanId: string) {
+    const planRes = await fetch(`/api/plans/${newPlanId}`)
+    if (planRes.ok) {
+      const { plan: updatedPlan } = await planRes.json()
+      setPlan(updatedPlan)
+    }
+    setShowRefine(false)
+  }
+
   if (!session?.id) {
     router.push('/profile')
     return null
@@ -110,10 +122,24 @@ export default function PlanPage() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Your Room Plan</h1>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/plan/refine">Refine ✏️</Link>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowRefine((v) => !v)}
+        >
+          {showRefine ? 'Hide Refine' : 'Refine ✏️'}
         </Button>
       </div>
+
+      {showRefine && plan?.id && session?.id && (
+        <div className="rounded-xl border bg-muted/30 p-4">
+          <RefineChat
+            planId={plan.id}
+            sessionId={session.id}
+            onRefined={handleRefined}
+          />
+        </div>
+      )}
 
       {plan && (
         <PlanView
@@ -123,9 +149,13 @@ export default function PlanPage() {
         />
       )}
 
+      {plan?.id && !isStreaming && (
+        <RecommendedAdditions planId={plan.id} />
+      )}
+
       <div className="flex gap-3 pt-2">
-        <Button variant="outline" asChild className="flex-1 h-12">
-          <Link href="/plan/refine">Refine Plan</Link>
+        <Button variant="outline" onClick={() => setShowRefine((v) => !v)} className="flex-1 h-12">
+          {showRefine ? 'Hide Refine' : 'Refine Plan ✏️'}
         </Button>
         <Button asChild className="flex-1 h-12">
           <Link href={`/complete?planId=${plan?.id}&sessionId=${session.id}`}>

@@ -62,7 +62,19 @@ export interface AddressMeta {
   estimatedSqft: number | null
   rooms: RoomType[]
   source: 'stub' | 'api'
+  floorPlanNote?: string
 }
+
+export const WALL_COLORS = [
+  { id: 'crisp-white',  label: 'Crisp White',  hex: '#F8F8F5' },
+  { id: 'warm-greige',  label: 'Warm Greige',  hex: '#C8BDB2' },
+  { id: 'sage-green',   label: 'Sage Green',   hex: '#87A88A' },
+  { id: 'dusty-blue',   label: 'Dusty Blue',   hex: '#8FA8BD' },
+  { id: 'soft-blush',   label: 'Soft Blush',   hex: '#E8C4BA' },
+  { id: 'terracotta',   label: 'Terracotta',   hex: '#C8714A' },
+  { id: 'deep-navy',    label: 'Deep Navy',    hex: '#1E3A5F' },
+  { id: 'charcoal',     label: 'Charcoal',     hex: '#4A4A4A' },
+] as const
 
 export interface BudgetCents {
   [room: string]: number

@@ -93,13 +93,13 @@ function RoomGrid({ room, items }: { room: RoomType; items: PlanData['items'] })
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {items.map((item) => (
           <div key={item.id} className="flex flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
-            <div className="relative h-28 bg-muted">
+            <div className="relative h-44 bg-muted">
               <Image
-                src={item.product.thumbnailUrl}
+                src={item.product.imageUrl}
                 alt={item.product.name}
                 fill
                 className="object-cover"
-                sizes="(max-width: 640px) 50vw, 200px"
+                sizes="(max-width: 640px) 50vw, 300px"
               />
             </div>
             <div className="flex flex-col gap-1 p-3">
